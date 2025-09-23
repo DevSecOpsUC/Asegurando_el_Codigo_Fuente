@@ -9,6 +9,7 @@ app = Flask(__name__)
 DB_PATH = os.environ.get('DATABASE_URL', 'sqlite:///data/tasks.db').replace('sqlite:///', '')
 
 def init_db():
+    os.makedirs(os.path.dirname(DB_PATH) or '.', exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
     conn.execute('CREATE TABLE IF NOT EXISTS tasks (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, description TEXT)')
     conn.commit()
@@ -18,16 +19,18 @@ class TaskIn(BaseModel):
     title: constr(min_length=1, max_length=120)
     description: constr(max_length=1000) = ""
 
-@app.before_first_request
-def setup():
-    os.makedirs(os.path.dirname(DB_PATH) or '.', exist_ok=True)
+# Inicialización explícita (no usar decorator para compatibilidad)
+try:
     init_db()
+except Exception as e:
+    # Log básico; en producción usa logging
+    print("Warning: could not initialize DB at startup:", e)
 
-@app.get("/")
+@app.route("/")
 def index():
     return jsonify({"status": "tasks-service running"})
 
-@app.get("/tasks")
+@app.route("/tasks", methods=["GET"])
 def list_tasks():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.execute('SELECT id, title, description FROM tasks')
@@ -35,7 +38,7 @@ def list_tasks():
     conn.close()
     return jsonify(tasks)
 
-@app.post("/tasks")
+@app.route("/tasks", methods=["POST"])
 def create_task():
     try:
         payload = request.get_json() or {}
@@ -51,4 +54,5 @@ def create_task():
     return jsonify({"id": task_id, "title": task.title, "description": task.description}), 201
 
 if __name__ == "__main__":
+    # Si quieres modo debug local, usa FLASK_ENV=development o debug=True
     app.run(host="0.0.0.0", port=5000)
