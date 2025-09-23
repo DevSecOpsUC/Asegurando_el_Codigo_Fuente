@@ -1,4 +1,4 @@
-name: SonarCloud - .NET + Python
+name: SonarCloud - .NET (auth-service)
 
 on:
   push:
@@ -12,7 +12,8 @@ jobs:
     name: Build and analyze .NET (auth-service)
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -42,27 +43,32 @@ jobs:
           New-Item -Path ${{ runner.temp }}\scanner -ItemType Directory -Force
           dotnet tool install dotnet-sonarscanner --version 5.* --tool-path ${{ runner.temp }}\scanner
 
-      - name: Begin SonarCloud analysis (run from auth-service folder)
-        shell: powershell
+      - name: Begin SonarCloud analysis (in auth-service)
         working-directory: auth-service
+        shell: powershell
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           $scanner = "${{ runner.temp }}\scanner\dotnet-sonarscanner"
-          & $scanner begin /k:"AndresBarrios18_ProyectoGrado1" /o:"andresbarrios18" /d:sonar.login="${{ env:SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
+          & $scanner begin /k:"${{ secrets.SONAR_PROJECT_KEY }}" /o:"${{ secrets.SONAR_ORGANIZATION }}" /d:sonar.login="${{ env:SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
 
-      - name: Build auth-service (same folder)
+      - name: Restore & Build auth-service (same folder)
         working-directory: auth-service
         shell: powershell
         run: |
           dotnet restore
           dotnet build --configuration Release
 
-      - name: End SonarCloud analysis (same folder)
-        shell: powershell
+      # (Opcional) Ejecutar pruebas y generar coverage aquí, por ejemplo:
+      - name: Run tests and collect coverage
         working-directory: auth-service
+        run: dotnet test --collect:"XPlat Code Coverage"
+
+      - name: End SonarCloud analysis (in auth-service)
+        working-directory: auth-service
+        shell: powershell
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           $scanner = "${{ runner.temp }}\scanner\dotnet-sonarscanner"
-          & $scanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+          & $scanner end /d:sonar.login="${{ env:SONAR_TOKEN }}"
