@@ -46,11 +46,9 @@ jobs:
       - name: Begin SonarCloud analysis (in auth-service)
         working-directory: auth-service
         shell: powershell
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           $scanner = "${{ runner.temp }}\scanner\dotnet-sonarscanner"
-          & $scanner begin /k:"${{ secrets.SONAR_PROJECT_KEY }}" /o:"${{ secrets.SONAR_ORGANIZATION }}" /d:sonar.login="${{ env:SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
+          & $scanner begin /k:"${{ secrets.SONAR_PROJECT_KEY }}" /o:"${{ secrets.SONAR_ORGANIZATION }}" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
 
       - name: Restore & Build auth-service (same folder)
         working-directory: auth-service
@@ -59,16 +57,9 @@ jobs:
           dotnet restore
           dotnet build --configuration Release
 
-      # (Opcional) Ejecutar pruebas y generar coverage aquí, por ejemplo:
-      - name: Run tests and collect coverage
-        working-directory: auth-service
-        run: dotnet test --collect:"XPlat Code Coverage"
-
       - name: End SonarCloud analysis (in auth-service)
         working-directory: auth-service
         shell: powershell
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           $scanner = "${{ runner.temp }}\scanner\dotnet-sonarscanner"
-          & $scanner end /d:sonar.login="${{ env:SONAR_TOKEN }}"
+          & $scanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
