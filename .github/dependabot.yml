@@ -1,0 +1,10 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/tasks-service"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "nuget"
+    directory: "/auth-service"
+    schedule:
+      interval: "daily"
