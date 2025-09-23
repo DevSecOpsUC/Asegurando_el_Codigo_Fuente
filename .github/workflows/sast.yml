@@ -16,7 +16,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up JDK 17 (required by Sonar)
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: 17
@@ -35,32 +35,34 @@ jobs:
           key: ${{ runner.os }}-sonar-scanner
           restore-keys: ${{ runner.os }}-sonar-scanner
 
-      - name: Install dotnet-sonarscanner (only if cache miss)
+      - name: Install dotnet-sonarscanner (if cache miss)
         if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
         shell: powershell
         run: |
           New-Item -Path ${{ runner.temp }}\scanner -ItemType Directory -Force
           dotnet tool install dotnet-sonarscanner --version 5.* --tool-path ${{ runner.temp }}\scanner
 
-      - name: Begin SonarCloud analysis
+      - name: Begin SonarCloud analysis (run from auth-service folder)
+        shell: powershell
+        working-directory: auth-service
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        shell: powershell
         run: |
           $scanner = "${{ runner.temp }}\scanner\dotnet-sonarscanner"
-          & $scanner begin /k:"AndresBarrios18_ProyectoGrado1" /o:"andresbarrios18" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
+          & $scanner begin /k:"AndresBarrios18_ProyectoGrado1" /o:"andresbarrios18" /d:sonar.login="${{ env:SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
 
-      - name: Build auth-service
+      - name: Build auth-service (same folder)
         working-directory: auth-service
         shell: powershell
         run: |
           dotnet restore
           dotnet build --configuration Release
 
-      - name: End SonarCloud analysis
+      - name: End SonarCloud analysis (same folder)
+        shell: powershell
+        working-directory: auth-service
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        shell: powershell
         run: |
           $scanner = "${{ runner.temp }}\scanner\dotnet-sonarscanner"
           & $scanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
