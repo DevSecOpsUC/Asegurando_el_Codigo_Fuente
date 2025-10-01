@@ -34,7 +34,7 @@ jobs:
         # si no tienes tests, puedes comentar o eliminar este paso
 
       - name: Run SonarQube (SonarCloud) scan
-        uses: SonarSource/sonarqube-scan-action@v5.3.1
+        uses: SonarSource/sonarqube-scan-action@v6.0.0
         with:
           args: >
             -Dsonar.projectKey=DevSecOpsUC_Asegurando_el_Codigo_Fuente
