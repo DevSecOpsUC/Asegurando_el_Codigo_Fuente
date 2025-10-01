@@ -36,10 +36,9 @@ jobs:
       - name: Run SonarQube (SonarCloud) scan
         uses: SonarSource/sonarqube-scan-action@v5.3.1
         with:
-          # pasa los argumentos al scanner CLI (ajusta el projectKey/organization)
           args: >
-            -Dsonar.projectKey=MY_PROJECT_KEY
-            -Dsonar.organization=MY_ORG
+            -Dsonar.projectKey=DevSecOpsUC_Asegurando_el_Codigo_Fuente
+            -Dsonar.organization=DevSecOpsUC
             -Dsonar.host.url=https://sonarcloud.io
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
