@@ -1,4 +1,4 @@
-name: SonarCloud Scan (C#)
+name: SonarCloud Scan (C# - SonarQube Scan Action)
 
 on:
   push:
@@ -17,20 +17,29 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Restore
-        run: dotnet restore
+      - name: Restore & build auth-service
+        run: |
+          dotnet restore
+          dotnet build --configuration Release
+        working-directory: ./auth-service
 
-      - name: Build
-        run: dotnet build --configuration Release
+      - name: Restore & build rooms-service
+        run: |
+          dotnet restore
+          dotnet build --configuration Release
+        working-directory: ./rooms-service
 
-      - name: Run tests
+      - name: Run tests (if any)
         run: dotnet test --no-build --verbosity normal
+        # si no tienes tests, puedes comentar o eliminar este paso
 
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
+      - name: Run SonarQube (SonarCloud) scan
+        uses: SonarSource/sonarqube-scan-action@v5.3.1
         with:
+          # pasa los argumentos al scanner CLI (ajusta el projectKey/organization)
           args: >
-            -Dsonar.projectKey=MY_ORG_MY_REPO
+            -Dsonar.projectKey=MY_PROJECT_KEY
             -Dsonar.organization=MY_ORG
+            -Dsonar.host.url=https://sonarcloud.io
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
