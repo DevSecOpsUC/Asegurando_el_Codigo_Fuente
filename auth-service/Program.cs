@@ -1,23 +1,36 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddAuthentication();
-builder.Services.AddAuthorization();
+
+// CORS (solo para pruebas locales)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowLocalFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:8080")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 var app = builder.Build();
 
-app.MapGet("/", () => Results.Ok(new { status = "auth-service running" }));
+app.UseCors("AllowLocalFrontend");
 
-// Example protected endpoint (requires Authorization header)
-app.MapGet("/me", (HttpContext ctx) =>
+app.MapGet("/health", () => Results.Ok(new { status = "auth ok" }));
+
+app.MapPost("/login", async (HttpContext ctx) =>
 {
-    // In a real implementation validate JWT and return claims
-    if (!ctx.Request.Headers.ContainsKey("Authorization"))
-        return Results.Unauthorized();
-
-    return Results.Ok(new { user = "demo-user", role = "user" });
+    var body = await System.Text.Json.JsonSerializer.DeserializeAsync<LoginRequest>(ctx.Request.Body);
+    if (body is not null && body.User == "test" && body.Password == "test")
+    {
+        return Results.Ok(new { token = "fake-jwt-token" });
+    }
+    return Results.Unauthorized();
 });
 
 app.Run();
+
+internal record LoginRequest(string User, string Password);

@@ -1,7 +1,14 @@
 version: 2
 updates:
   - package-ecosystem: "nuget"
-    directory: "/"
+    directory: "/"            # si tu solution .sln está en la raíz
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 5
+  - package-ecosystem: "nuget"
+    directory: "/auth-service"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "nuget"
+    directory: "/rooms-service"
+    schedule:
+      interval: "weekly"

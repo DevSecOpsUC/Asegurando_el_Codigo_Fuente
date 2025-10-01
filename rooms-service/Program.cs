@@ -3,7 +3,21 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// CORS (solo para pruebas locales)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowLocalFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:8080")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
+
+app.UseCors("AllowLocalFrontend");
 
 app.MapGet("/health", () => Results.Ok(new { status = "rooms ok" }));
 

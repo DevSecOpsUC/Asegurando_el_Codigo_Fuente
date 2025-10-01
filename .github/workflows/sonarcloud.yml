@@ -11,21 +11,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '8.0.x'
+
       - name: Restore
         run: dotnet restore
+
       - name: Build
         run: dotnet build --configuration Release
+
       - name: Run tests
         run: dotnet test --no-build --verbosity normal
+
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@v1.12
+        uses: SonarSource/sonarcloud-github-action@master
         with:
           args: >
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
             -Dsonar.projectKey=MY_ORG_MY_REPO
             -Dsonar.organization=MY_ORG
         env:
