@@ -1,0 +1,29 @@
+name: "CodeQL"
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: csharp
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2
+        with:
+          # For complex solutions you may want to call dotnet build yourself
+          cmd: dotnet build --configuration Release
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2

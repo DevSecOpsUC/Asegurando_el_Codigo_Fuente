@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Microservices demo</title>
+</head>
+<body>
+  <h1>Rooms</h1>
+  <button id="btn">Cargar habitaciones</button>
+  <pre id="out"></pre>
+
+<script>
+document.getElementById('btn').addEventListener('click', async () => {
+  try {
+    const res = await fetch('http://localhost:5001/rooms');
+    const data = await res.json();
+    document.getElementById('out').textContent = JSON.stringify(data, null, 2);
+  } catch (e) {
+    document.getElementById('out').textContent = 'Error: ' + e;
+  }
+});
+</script>
+</body>
+</html>
