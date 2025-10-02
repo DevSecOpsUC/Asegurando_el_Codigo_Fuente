@@ -38,8 +38,10 @@ jobs:
         with:
           args: >
             -Dsonar.projectKey=DevSecOpsUC_Asegurando_el_Codigo_Fuente
+            -Dsonar.organization=<ORG_KEY_EXACTA>
             -Dsonar.host.url=https://sonarcloud.io
-            -Dsonar.login=$SONAR_TOKEN
+            -Dsonar.login=${SONAR_TOKEN}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
 
