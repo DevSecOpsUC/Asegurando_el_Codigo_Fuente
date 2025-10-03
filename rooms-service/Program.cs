@@ -4,6 +4,10 @@ using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// DEMO: fallo intencional — NO dejar en producción
+const string ConnectionString = "Server=localhost;User Id=sa;Password=P@ssw0rd123!";
+
+
 // CORS (solo para pruebas locales)
 builder.Services.AddCors(options =>
 {
