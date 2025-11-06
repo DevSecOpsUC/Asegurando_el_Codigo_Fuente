@@ -1,0 +1,16 @@
+version: 2
+updates:
+  - package-ecosystem: "nuget"
+    directory: "/Unidad1_AsegurandoCodigo"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "nuget"
+    directory: "/Unidad1_AsegurandoCodigo/auth-service"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "nuget"
+    directory: "/Unidad1_AsegurandoCodigo/rooms-service"
+    schedule:
+      interval: "weekly"

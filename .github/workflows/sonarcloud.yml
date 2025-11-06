@@ -1,0 +1,70 @@
+name: "SonarCloud - DevSecOpsUC (.NET)"
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+
+jobs:
+  sonarcloud:
+    runs-on: ubuntu-latest
+    name: SonarCloud Analysis (.NET 8)
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: ⚙️ Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: ☕ Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: 17
+
+      - name: �� Install SonarScanner
+        run: |
+          dotnet tool install --global dotnet-sonarscanner --version 5.*
+          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
+      - name: ☁️ Begin SonarCloud analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+          SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
+        run: |
+          cd Unidad1_AsegurandoCodigoFuente
+          dotnet sonarscanner begin \
+            /k:"$SONAR_PROJECT_KEY" \
+            /o:"$SONAR_ORGANIZATION" \
+            /d:sonar.token="$SONAR_TOKEN" \
+            /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.sources="auth-service,rooms-service" \
+            /d:sonar.tests="auth-service.Tests,rooms-service.Tests" \
+            /d:sonar.cs.opencover.reportsPaths="**/coverage.cobertura.xml" \
+            /d:sonar.exclusions="**/bin/**,**/obj/**,**/*.yml,**/Dockerfile"
+
+      - name: �� Build and Test
+        run: |
+          dotnet restore Unidad1_AsegurandoCodigoFuente/AsegurandoCodigo.sln
+          dotnet build Unidad1_AsegurandoCodigoFuente/AsegurandoCodigo.sln --configuration Release --no-restore
+          dotnet test Unidad1_AsegurandoCodigoFuente/auth-service.Tests/auth-service.Tests.csproj \
+            --configuration Release --no-build \
+            /p:CollectCoverage=true \
+            /p:CoverletOutput=TestResults/ \
+            /p:CoverletOutputFormat=cobertura
+          dotnet test Unidad1_AsegurandoCodigoFuente/rooms-service.Tests/rooms-service.Tests.csproj \
+            --configuration Release --no-build \
+            /p:CollectCoverage=true \
+            /p:CoverletOutput=TestResults/ \
+            /p:CoverletOutputFormat=cobertura
+
+      - name: �� End SonarCloud analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"
